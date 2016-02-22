@@ -32,7 +32,10 @@ int main(int argc, char *argv[])
    if (sock < 0) error("socket");
 
    server.sin_family = AF_INET;
-   hp = gethostbyname(argv[1]);
+   if (argv[1] == "localhost")
+     hp = gethostbyname("127.0.0.1");
+   else
+     hp = gethostbyname(argv[1]);
    if (hp == 0) error("Unknown host");
 
    bcopy((char *)hp->h_addr, (char *)&server.sin_addr, hp->h_length);

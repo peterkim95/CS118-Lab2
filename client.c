@@ -10,6 +10,8 @@
 #include <unistd.h>
 #include <string.h>
 
+#define HEADER_SIZE = 64
+
 void error(const char *);
 int main(int argc, char *argv[])
 {
@@ -17,7 +19,7 @@ int main(int argc, char *argv[])
    unsigned int length;
    struct sockaddr_in server, from;
    struct hostent *hp;
-   char buffer[256];
+   char buffer[1024];
    char* filename;
 
    if (argc != 4) {
@@ -31,7 +33,7 @@ int main(int argc, char *argv[])
    sock = socket(AF_INET, SOCK_DGRAM, 0);
    if (sock < 0) error("socket");
    server.sin_family = AF_INET;
-   
+
    // Localhost support
    if (argv[1] == "localhost")
      hp = gethostbyname("127.0.0.1");
@@ -42,10 +44,18 @@ int main(int argc, char *argv[])
    bcopy((char *)hp->h_addr, (char *)&server.sin_addr, hp->h_length);
    server.sin_port = htons(atoi(argv[2]));
    length=sizeof(struct sockaddr_in);
-   printf("Please enter the message: ");
-   bzero(buffer,256);
-   fgets(buffer,255,stdin);
-   n = sendto(sock,buffer, strlen(buffer),0,(const struct sockaddr *)&server,length);
+
+   bzero(buffer,1024);
+
+   char header[HEADER_SIZE];
+   // construct header here
+
+   memset(buffer, header, HEADER_SIZE);
+
+   memset(buffer + HEADER_SIZE, filename, strlen(filename) + 1);
+
+
+   n = sendto(sock, buffer, strlen(buffer), 0, (const struct sockaddr *)&server,length);
    if (n < 0) error("Sendto");
    n = recvfrom(sock,buffer,256,0,(struct sockaddr *)&from, &length);
    if (n < 0) error("recvfrom");

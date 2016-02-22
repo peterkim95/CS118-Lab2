@@ -12,6 +12,8 @@
 #include <netdb.h>
 #include <stdio.h>
 
+#define HEADER_SIZE 64
+
 void error(const char *msg)
 {
     perror(msg);
@@ -41,14 +43,24 @@ int main(int argc, char *argv[])
    if (bind(sock,(struct sockaddr *)&server,length)<0)
        error("binding");
    fromlen = sizeof(struct sockaddr_in);
+
    while (1) {
        n = recvfrom(sock,buf,1024,0,(struct sockaddr *)&from,&fromlen);
+
        if (n < 0) error("recvfrom");
+
        write(1,"Received a datagram: ",21);
-       write(1,buf,n);
-       n = sendto(sock,"Got your message\n",17,
-                  0,(struct sockaddr *)&from,fromlen);
+
+       // Parse packet into header and data
+       char header[HEADER_SIZE];
+
+       printf ("%s", buffer + HEADER_SIZE);
+       //write(1,buf+HEADER_SIZE,n);
+
+
+       n = sendto(sock,"Got your message\n",17, 0,(struct sockaddr *)&from,fromlen);
        if (n  < 0) error("sendto");
    }
+
    return 0;
 }

@@ -11,7 +11,6 @@
 #include <string.h>
 #include <netdb.h>
 #include <stdio.h>
-#include <sys/stat.h> /* struct stat */
 
 #define HEADER_SIZE 64
 #define PACKET_SIZE 1024
@@ -56,16 +55,12 @@ int main(int argc, char *argv[])
        // Parse packet into header and data
        // char header[HEADER_SIZE];
 
-       char* filename;
+       char* fllename;
        filename = buf+HEADER_SIZE;
 
        printf("filename=%s\n", buf+HEADER_SIZE);
 
        // Check if file exists
-       struct stat b;
-       if (stat(filename, &b) != 0) {
-         // handle nonexistant file
-       }
 
        FILE *fp = fopen(filename, "r");
 

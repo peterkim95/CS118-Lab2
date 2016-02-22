@@ -55,16 +55,21 @@ int main(int argc, char *argv[])
        // Parse packet into header and data
        // char header[HEADER_SIZE];
 
-       char* fllename;
+       char* filename;
        filename = buf+HEADER_SIZE;
 
        printf("filename=%s\n", buf+HEADER_SIZE);
 
        // Check if file exists
-
        FILE *fp = fopen(filename, "r");
-
        if (!fp) error("Requested file doesn't exist in the working directory");
+
+       // Figure out file size
+       fseek(fp, 0L, SEEK_END);
+       int fsize = (int) ftell(fp);
+       fseek(fp, 0L, SEEK_SET);
+
+       printf("file size = %d\n", fsize);
 
        // Divide file into packets
 

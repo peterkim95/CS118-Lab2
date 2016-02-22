@@ -71,6 +71,13 @@ int main(int argc, char *argv[])
 
        printf("file size = %d\n", fsize);
 
+       int total;
+    	 total = fsize / PACKET_SIZE;
+    	 if (fsize % PACKET_SIZE > 0)
+    	   total++;
+    	 printf("Required packets: %d\n", total);
+    	 printf("----------------------------------------\n");
+
        // Divide file into packets
 
        // Send each packet as they are ready

@@ -53,6 +53,18 @@ int main(int argc, char *argv[])
    char header[HEADER_SIZE];
    // construct header here
 
+   // PACKET STRUCTURE
+   /*
+
+
+    int type;	// 0: Initial File Request, 1: Data, 2: ACK, 3: FIN (signal for final packet)
+    int seq;	// Packet sequence number
+    int size;	// Data size
+    int checksum; // For detecting corruption
+
+    char* data;
+   */
+
    memcpy(buffer, header, HEADER_SIZE);
 
    memcpy(buffer + HEADER_SIZE, filename, strlen(filename) + 1);

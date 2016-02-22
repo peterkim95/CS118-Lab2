@@ -5,7 +5,7 @@
 #include <netinet/in.h>
 #include <netdb.h>      // define structures like hostent
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
 
 void error(char *msg)
 {

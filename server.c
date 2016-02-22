@@ -76,7 +76,22 @@ int main(int argc, char *argv[])
     	 if (fsize % PACKET_SIZE > 0)
     	   total++;
     	 printf("Required packets: %d\n", total);
-    	 printf("----------------------------------------\n");
+
+       int wsize = 5;
+       int wstart = 0;
+
+       int cur = 0;
+
+       while (cur < total)
+       {
+         int wend = wstart + wsize;
+         while (cur < wend)
+         {
+           send cur;
+           cur++;
+
+         }
+       }
 
        // Divide file into packets
 

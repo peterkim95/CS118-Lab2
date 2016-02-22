@@ -18,27 +18,30 @@ int main(int argc, char *argv[])
    struct sockaddr_in server, from;
    struct hostent *hp;
    char buffer[256];
+   char* filename;
 
-   if (argc != 3) { printf("Usage: server port\n");
-                    exit(1);
+   if (argc != 4) {
+     printf("Usage: ./client host port filename\n");
+     exit(1);
    }
-   sock= socket(AF_INET, SOCK_DGRAM, 0);
+
+   // Get requested filename
+   filename = argv[3];
+
+   sock = socket(AF_INET, SOCK_DGRAM, 0);
    if (sock < 0) error("socket");
 
    server.sin_family = AF_INET;
    hp = gethostbyname(argv[1]);
-   if (hp==0) error("Unknown host");
+   if (hp == 0) error("Unknown host");
 
-   bcopy((char *)hp->h_addr,
-        (char *)&server.sin_addr,
-         hp->h_length);
+   bcopy((char *)hp->h_addr, (char *)&server.sin_addr, hp->h_length);
    server.sin_port = htons(atoi(argv[2]));
    length=sizeof(struct sockaddr_in);
    printf("Please enter the message: ");
    bzero(buffer,256);
    fgets(buffer,255,stdin);
-   n=sendto(sock,buffer,
-            strlen(buffer),0,(const struct sockaddr *)&server,length);
+   n = sendto(sock,buffer, strlen(buffer),0,(const struct sockaddr *)&server,length);
    if (n < 0) error("Sendto");
    n = recvfrom(sock,buffer,256,0,(struct sockaddr *)&from, &length);
    if (n < 0) error("recvfrom");

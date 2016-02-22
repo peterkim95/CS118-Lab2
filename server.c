@@ -13,6 +13,7 @@
 #include <stdio.h>
 
 #define HEADER_SIZE 64
+#define PACKET_SIZE 1024
 
 void error(const char *msg)
 {
@@ -52,9 +53,10 @@ int main(int argc, char *argv[])
        write(1,"Received a datagram: ",21);
 
        // Parse packet into header and data
-       char header[HEADER_SIZE];
-
-       printf ("%s", buffer + HEADER_SIZE);
+       // char header[HEADER_SIZE];
+       printf("filename=%s\n", buf+HEADER_SIZE);
+       //write(1, buf + HEADER_SIZE, PACKET_SIZE - HEADER_SIZE);
+       // printf ("DATA: %s", buf + HEADER_SIZE);
        //write(1,buf+HEADER_SIZE,n);
 
 

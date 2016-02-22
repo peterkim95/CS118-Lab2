@@ -10,7 +10,8 @@
 #include <unistd.h>
 #include <string.h>
 
-#define HEADER_SIZE = 64
+#define HEADER_SIZE 64
+#define PACKET_SIZE 1024
 
 void error(const char *);
 int main(int argc, char *argv[])
@@ -35,7 +36,7 @@ int main(int argc, char *argv[])
    server.sin_family = AF_INET;
 
    // Localhost support
-   if (argv[1] == "localhost")
+   if (strncmp(argv[1],"localhost", strlen(argv[1])) == 0)
      hp = gethostbyname("127.0.0.1");
    else
      hp = gethostbyname(argv[1]);
@@ -45,22 +46,26 @@ int main(int argc, char *argv[])
    server.sin_port = htons(atoi(argv[2]));
    length=sizeof(struct sockaddr_in);
 
-   bzero(buffer,1024);
+   bzero(buffer,PACKET_SIZE);
+
+   //memcpy(buffer, filename, strlen(filename) + 1);
 
    char header[HEADER_SIZE];
    // construct header here
 
-   memset(buffer, header, HEADER_SIZE);
+   memcpy(buffer, header, HEADER_SIZE);
 
-   memset(buffer + HEADER_SIZE, filename, strlen(filename) + 1);
+   memcpy(buffer + HEADER_SIZE, filename, strlen(filename) + 1);
 
 
-   n = sendto(sock, buffer, strlen(buffer), 0, (const struct sockaddr *)&server,length);
+   n = sendto(sock, buffer, PACKET_SIZE, 0, (const struct sockaddr*)&server, length);
    if (n < 0) error("Sendto");
    n = recvfrom(sock,buffer,256,0,(struct sockaddr *)&from, &length);
    if (n < 0) error("recvfrom");
    write(1,"Got an ack: ",12);
+
    write(1,buffer,n);
+
    close(sock);
    return 0;
 }

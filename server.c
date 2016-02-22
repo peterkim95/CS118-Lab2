@@ -54,7 +54,22 @@ int main(int argc, char *argv[])
 
        // Parse packet into header and data
        // char header[HEADER_SIZE];
+
+       char* fllename;
+       filename = buf+HEADER_SIZE;
+
        printf("filename=%s\n", buf+HEADER_SIZE);
+
+       // Check if file exists
+
+       FILE *fp = fopen(filename, "r");
+
+       if (!fp) error("Requested file doesn't exist in the working directory");
+
+       // Divide file into packets
+
+       // Send each packet as they are ready
+
        //write(1, buf + HEADER_SIZE, PACKET_SIZE - HEADER_SIZE);
        // printf ("DATA: %s", buf + HEADER_SIZE);
        //write(1,buf+HEADER_SIZE,n);

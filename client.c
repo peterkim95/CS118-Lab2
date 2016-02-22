@@ -30,8 +30,9 @@ int main(int argc, char *argv[])
 
    sock = socket(AF_INET, SOCK_DGRAM, 0);
    if (sock < 0) error("socket");
-
    server.sin_family = AF_INET;
+   
+   // Localhost support
    if (argv[1] == "localhost")
      hp = gethostbyname("127.0.0.1");
    else

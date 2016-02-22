@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 {
     int sockfd; //Socket descriptor
     int portno, n;
-    char filename[256];
+    char* filename;
     struct sockaddr_in serv_addr;
     struct hostent *server; //contains tons of information, including the server's IP address
 

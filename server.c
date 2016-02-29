@@ -12,23 +12,7 @@
 #include <netdb.h>
 #include <stdio.h>
 
-#define HEADER_SIZE 64
-#define PACKET_DATA_SIZE 1008 // 1024 - 4(INT) = 1024 - (4*4) = 1008
-
-struct packet {
-  int type;	// 0: Request, 1: Data, 2: ACK, 3: FIN
-  int seq;	// Packet sequence number
-  int size;	// Data size
-  int checksum;   // To detect corruption
-
-  char data[PACKET_DATA_SIZE];
-};
-
-void error(const char *msg)
-{
-  perror(msg);
-  exit(0);
-}
+#include "packet.c"
 
 int main(int argc, char *argv[])
 {
@@ -110,6 +94,8 @@ int main(int argc, char *argv[])
         // send next packet in window
         if (sendto(sock, &outgoing, sizeof(outgoing), 0, (struct sockaddr*) &client, clientlen) < 0)
         	error("ERROR sending packet\n");
+
+        print_packet(outgoing, 1);
         cur++;
 
         // HOW TO ATTACH A TIMER ON EACH PACKET?????
@@ -128,8 +114,8 @@ int main(int argc, char *argv[])
     //write(1,buf+HEADER_SIZE,n);
 
 
-    n = sendto(sock,"Got your message\n",17, 0,(struct sockaddr *)&client,clientlen);
-    if (n  < 0) error("sendto");
+    // n = sendto(sock,"Got your message\n",17, 0,(struct sockaddr *)&client,clientlen);
+    // if (n  < 0) error("sendto");
 
   }
 

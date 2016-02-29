@@ -10,23 +10,7 @@
 #include <unistd.h>
 #include <string.h>
 
-#define HEADER_SIZE 64
-#define PACKET_DATA_SIZE 1008 // 1024 - 4(INT) = 1024 - (4*4) = 1008
-
-struct packet {
-  int type;	// 0: Request, 1: Data, 2: ACK, 3: FIN
-  int seq;	// Packet sequence number
-  int size;	// Data size
-  int checksum;   // To detect corruption
-
-  char data[PACKET_DATA_SIZE];
-};
-
-void error(const char *msg)
-{
-  perror(msg);
-  exit(0);
-}
+#include "packet.c"
 
 int main(int argc, char *argv[])
 {
@@ -68,15 +52,17 @@ int main(int argc, char *argv[])
   outgoing.size = strlen(filename) + 1;
   strcpy(outgoing.data, filename);
 
+  // Send initial file request
+  if (sendto(sock, &outgoing, sizeof(outgoing), 0, (const struct sockaddr*)&server, length) < 0)
+    error("Sendto");
+  print_packet(outgoing, 1);
 
-  n = sendto(sock, &outgoing, sizeof(outgoing), 0, (const struct sockaddr*)&server, length);
-  if (n < 0) error("Sendto");
-
-  n = recvfrom(sock,buffer,256,0,(struct sockaddr *)&from, &length);
+  n = recvfrom(sock, &incoming, sizeof(incoming), 0, (struct sockaddr *)&from, &length);
   if (n < 0) error("recvfrom");
-  write(1,"Got an ack: ",12);
-
-  write(1,buffer,n);
+  // write(1,"Got an ack: ",12);
+  //
+  // write(1,buffer,n);
+  print_packet(incoming, 0);
 
   close(sock);
   return 0;

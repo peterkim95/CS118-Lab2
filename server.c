@@ -11,6 +11,7 @@
 #include <string.h>
 #include <netdb.h>
 #include <stdio.h>
+#include <fcntl.h>
 
 #include "packet.c"
 
@@ -19,6 +20,8 @@ int main(int argc, char *argv[])
   int sock, length, n;
   socklen_t clientlen;
   struct sockaddr_in server, client;
+
+
 
   struct packet incoming, outgoing;
 
@@ -30,6 +33,8 @@ int main(int argc, char *argv[])
   }
 
   sock=socket(AF_INET, SOCK_DGRAM, 0);
+
+
   if (sock < 0) error("Opening socket");
   length = sizeof(server);
   bzero(&server,length);
@@ -42,9 +47,15 @@ int main(int argc, char *argv[])
 
   while (1)
   {
-    n = recvfrom(sock,&incoming, sizeof(incoming),0,(struct sockaddr *)&client,&clientlen);
 
-    if (n < 0) error("recvfrom");
+    int flags = fcntl(sock, F_GETFL, 0); // get the flags currently set for the socket
+    fcntl( sock, F_SETFL, flags | O_NONBLOCK );  // make the socket nonblocking
+
+    // Listen until we get a file request
+    if (recvfrom(sock,&incoming, sizeof(incoming),0,(struct sockaddr *)&client,&clientlen) < 0) {
+      sleep(1);
+      continue;
+    }
 
     write(1,"Received a datagram: ",21);
 
@@ -79,6 +90,24 @@ int main(int argc, char *argv[])
 
     fd_set readset;
     struct timeval timeout = {1, 0};   // 1 sec timeout
+
+
+
+    while (1) {
+
+      // Received an ack
+      if(recvfrom(sock,&incoming, sizeof(incoming),0,(struct sockaddr *)&client,&clientlen) > 0) {
+        printf(" received something\n");
+      }
+
+      // Check for timeouts here
+      // Send packets here
+      else {
+        printf(" listening\n");
+        sleep(5);
+      }
+    }
+
 
     while (cur < total)
     {

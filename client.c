@@ -9,14 +9,17 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <vector>
 
 #include "packet.c"
+
+using namespace std;
 
 int main(int argc, char *argv[])
 {
   int sock, n;
   unsigned int length;
-  struct packet incoming, outgoing;
+  Packet incoming, outgoing;
   struct sockaddr_in server, from;
   struct hostent *hp;
   char buffer[1024];

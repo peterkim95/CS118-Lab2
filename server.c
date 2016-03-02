@@ -4,16 +4,21 @@
    server runs forever */
 
 #include <sys/types.h>
-#include <stdlib.h>
+#include <time.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <string.h>
 #include <netdb.h>
 #include <stdio.h>
+
 #include <fcntl.h>
+#include <stdlib.h>
+#include <vector>
 
 #include "packet.c"
+
+using namespace std;
 
 int main(int argc, char *argv[])
 {
@@ -21,13 +26,10 @@ int main(int argc, char *argv[])
   socklen_t clientlen;
   struct sockaddr_in server, client;
 
+  Packet incoming, outgoing;
 
-
-  struct packet incoming, outgoing;
-
-  char buf[1024];
-
-  if (argc < 2) {
+  if (argc < 2)
+  {
     fprintf(stderr, "ERROR, no port provided\n");
     exit(0);
   }
@@ -56,6 +58,15 @@ int main(int argc, char *argv[])
       sleep(1);
       continue;
     }
+
+    // Test BPacket Code
+    BPacket bp;
+    bp.t = time();
+    bp.p = incoming;
+    vector<BPacket> bp_list;
+    bp_list.push_back(bp);
+
+    if (n < 0) error("recvfrom");
 
     write(1,"Received a datagram: ",21);
 

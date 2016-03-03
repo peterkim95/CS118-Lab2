@@ -3,10 +3,10 @@ CFLAGS=-Wall
 all: client server
 
 client: client.o
-	gcc $(CFLAGS) -o client client.c
+	g++ $(CFLAGS) -o client client.cpp
 
 server: server.o
-	gcc $(CFLAGS) -o server server.c
+	g++ $(CFLAGS) -o server server.cpp
 
 clean:
 	$(RM) client

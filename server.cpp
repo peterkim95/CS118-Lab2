@@ -54,19 +54,11 @@ int main(int argc, char *argv[])
     fcntl( sock, F_SETFL, flags | O_NONBLOCK );  // make the socket nonblocking
 
     // Listen until we get a file request
-    if (recvfrom(sock,&incoming, sizeof(incoming),0,(struct sockaddr *)&client,&clientlen) < 0) {
+    if ((n = recvfrom(sock,&incoming, sizeof(incoming),0,(struct sockaddr *)&client,&clientlen)) < 0) {
       sleep(1);
       continue;
     }
 
-    // Test BPacket Code
-    BPacket bp;
-    bp.t = time();
-    bp.p = incoming;
-    vector<BPacket> bp_list;
-    bp_list.push_back(bp);
-
-    if (n < 0) error("recvfrom");
 
     write(1,"Received a datagram: ",21);
 
@@ -75,7 +67,7 @@ int main(int argc, char *argv[])
     char* filename;
     filename = incoming.data;
 
-    printf("filename=%s\n", filename);
+    printf("Got a request for file:%s\n", filename);
 
     // Check if file exists
     FILE *fp = fopen(filename, "r");
@@ -99,8 +91,6 @@ int main(int argc, char *argv[])
 
     int cur = 0;
 
-    fd_set readset;
-    struct timeval timeout = {1, 0};   // 1 sec timeout
 
 
 
@@ -108,12 +98,37 @@ int main(int argc, char *argv[])
 
       // Received an ack
       if(recvfrom(sock,&incoming, sizeof(incoming),0,(struct sockaddr *)&client,&clientlen) > 0) {
+
+        // Check ack's sequence number to see what packet got received
+
+        // Remove the packet from queue of packets needed to be sent
+
+        // If possible, slide window over
+        //   Send next packet
+        //   Add new packet and timer to queue
+
+
+        // If there are no more packets to send, break out of this loop
+        // so the server can listen for the next file to receive
+
+
+
         printf(" received something\n");
       }
 
       // Check for timeouts here
       // Send packets here
       else {
+
+        // Get current time
+
+        // Compare current time with oldest timestamp on the queue to get time_delta
+
+        // If time_delta > timeout:
+        //   dequeue
+        //   resend packet
+        //   add packet to end of queue
+
         printf(" listening\n");
         sleep(5);
       }

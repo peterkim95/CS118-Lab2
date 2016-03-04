@@ -14,11 +14,11 @@
 
 #include <fcntl.h>
 #include <stdlib.h>
-#include <vector>
+//#include <vector>
 
 #include "packet.c"
 
-using namespace std;
+// using namespace std;
 
 int main(int argc, char *argv[])
 {
@@ -60,11 +60,11 @@ int main(int argc, char *argv[])
     }
 
     // Test BPacket Code
-    BPacket bp;
-    bp.t = time();
-    bp.p = incoming;
-    vector<BPacket> bp_list;
-    bp_list.push_back(bp);
+    // BPacket bp;
+    // bp.t = time();
+    // bp.p = incoming;
+    // vector<BPacket> bp_list;
+    // bp_list.push_back(bp);
 
     if (n < 0) error("recvfrom");
 

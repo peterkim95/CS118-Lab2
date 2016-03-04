@@ -9,11 +9,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <vector>
+//#include <vector>
 
 #include "packet.c"
 
-using namespace std;
+// using namespace std;
 
 int main(int argc, char *argv[])
 {
@@ -60,12 +60,92 @@ int main(int argc, char *argv[])
     error("Sendto");
   print_packet(outgoing, 1);
 
-  n = recvfrom(sock, &incoming, sizeof(incoming), 0, (struct sockaddr *)&from, &length);
-  if (n < 0) error("recvfrom");
-  // write(1,"Got an ack: ",12);
-  //
-  // write(1,buffer,n);
-  print_packet(incoming, 0);
+  bool is_complete = false;
+  bool total[10000];
+
+  // set by user later
+  int ploss = 0.1;
+  int pcorr = 0.2;
+
+  srand (time(NULL));
+
+  FILE* fp = fopen("receive", "w");
+
+  char* all_data;
+  char* data;
+
+  int next_seq = 0;
+
+  while (1)
+  {
+    n = recvfrom(sock, &incoming, sizeof(incoming), 0, (struct sockaddr *)&from, &length);
+    if (n < 0) error("recvfrom");
+    print_packet(incoming, 0);
+
+    // 0. Emulate corruption and loss
+    double r = ((double)rand() / (double)RAND_MAX);
+    if (r < ploss)
+    {
+      printf("This packet is lost. Discarding...\n");
+      continue;
+    }
+
+    r = ((double)rand() / (double)RAND_MAX);
+    if (r < pcorr)
+    {
+      printf("This packet is corrupted. Discarding...\n");
+      continue;
+    }
+
+    total[incoming.seq] = true;
+    // 1. Process Packet
+    if (next_seq != incoming.seq) // received expected packet according to sequence
+    {
+      int i = incoming.seq;
+      while (total[i] == true){
+        i++;
+      }
+      next_seq = i;
+    }
+    else  // received out-of-order packet
+    {
+      printf("out-of-order packet received!\n");
+
+    }
+
+    int offset;
+    offset = incoming.seq * incoming.size;   // size should be 1008 for normal data packet; otherwise whatever's left for the final one
+
+    // Write data
+    memcpy(all_data + offset, incoming.data, incoming.size);
+
+
+    // 2. Send ACK
+    bzero((char *) &outgoing, sizeof(outgoing));
+    outgoing.type = 2;
+    outgoing.seq = incoming.seq;
+    outgoing.size = 0;  // empty data, just an ack
+    // strcpy(outgoing.data, filename);
+
+    if (sendto(sock, &outgoing, sizeof(outgoing), 0, (struct sockaddr_in *) &server, length) < 0);
+			error("ERROR - Failed to write to socket in sending ack");
+
+
+    if (incoming.type == 3)  // final data packet
+    {
+      is_complete = true;
+    }
+
+    // File transfer complete! Break out of loop.
+    if (is_complete)
+      break;
+  }
+
+  //write to file
+  fwrite(all_data, 1, sizeof(all_data), fp);
+	free(all_data);
+	fclose(fp);
+
 
   close(sock);
   return 0;

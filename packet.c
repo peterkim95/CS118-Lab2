@@ -1,5 +1,7 @@
 #define PACKET_DATA_SIZE 1008 // 1024 - 4(INT) = 1024 - (4*4) = 1008
 
+enum Packet_type { DATA, ACK, FIN };
+
 typedef struct packet
 {
   int type;	// 0: Request, 1: Data, 2: ACK, 3: FIN
@@ -12,7 +14,7 @@ typedef struct packet
 
 typedef struct bpacket
 {
-  time_t t;
+  long long t;
   Packet p;
 } BPacket;
 
@@ -124,6 +126,7 @@ BPacket frontelement()
     return(front->info);
   // else
     // return 0;
+  return(front->info);
 }
 
 /* Display if queue is empty or not */

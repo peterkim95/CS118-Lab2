@@ -76,6 +76,7 @@ void send_packet(
    // Check if this is the final packet
    if (feof(fp)) {
      outgoing.type = FIN;
+     fclose(fp);
    } else {
      outgoing.type = DATA;
    }
@@ -118,7 +119,7 @@ int main(int argc, char *argv[])
   size_t window_size = 5; // TODO: input
   int current_seq_num = -1;
   long timeout = 7000;    // TODO
-  int window_end;         // holds byte offset of where to read next in the file
+  int window_end = 0;         // holds byte offset of where to read next in the file
   socklen_t clientlen;
   struct sockaddr_in server, client;
 
@@ -188,6 +189,7 @@ int main(int argc, char *argv[])
 
     // Send the initial packets
     // Send as many as possible until the window is full or the whole file has been sent
+    window_end = 0;
     while((window.size() < window_size ) && (window_end < fsize)) {
        send_packet(outgoing, window_end, timer_queue, sock, fp, client, clientlen, window, current_seq_num, window_size);
     }

@@ -1,7 +1,8 @@
 Name: Peter Kim
 ID: 204-271-299
+-> I implemented the client side logic/code i.e. client.cpp, alongside the global packet structure and appropriate utility functions that can all be found in packet.c
 
-Name: Arvin
-// ID here
 
-// Brief description of what each of us did +
+Name: Arvin Nguyen
+ID: // ID here
+->  // Brief description of what each of us did +

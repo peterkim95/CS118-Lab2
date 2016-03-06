@@ -1,5 +1,0 @@
-16' Winter CS118
-Computer Network Fundamentals
-
-Hi class,
-This is a course project 1 test file.

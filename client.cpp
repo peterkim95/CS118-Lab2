@@ -127,8 +127,9 @@ int main(int argc, char *argv[])
     outgoing.size = 0;  // empty data, just an ack
     // strcpy(outgoing.data, filename);
 
-    if (sendto(sock, &outgoing, sizeof(outgoing), 0, (struct sockaddr*) &server, length) < 0);
-			error("ERROR - Failed to write to socket in sending ack");
+    if (sendto(sock, &outgoing, sizeof(outgoing), 0, (struct sockaddr*) &server, length) < 0) {
+      error("ERROR - Failed to write to socket in sending ack");
+    }
 
 
     if (incoming.type == 3)  // final data packet

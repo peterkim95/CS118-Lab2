@@ -9,11 +9,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-//#include <vector>
+#include <time.h>
 
 #include "packet.c"
 
-// using namespace std;
+using namespace std;
 
 int main(int argc, char *argv[])
 {
@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
     outgoing.size = 0;  // empty data, just an ack
     // strcpy(outgoing.data, filename);
 
-    if (sendto(sock, &outgoing, sizeof(outgoing), 0, (struct sockaddr_in *) &server, length) < 0);
+    if (sendto(sock, &outgoing, sizeof(outgoing), 0, (struct sockaddr*) &server, length) < 0);
 			error("ERROR - Failed to write to socket in sending ack");
 
 

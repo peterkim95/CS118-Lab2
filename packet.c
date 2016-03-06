@@ -1,4 +1,4 @@
-typedef enum { false, true } bool;
+//typedef enum { false, true } bool;
 
 #define PACKET_DATA_SIZE 1008 // 1024 - 4(INT) = 1024 - (4*4) = 1008
 
@@ -42,8 +42,8 @@ int hash(char* data)
 
 void corrupt_packet(Packet p)
 {
-  char* c;
-  c = "corrupted";
-  strcpy(p.data, c);
+  //char* c;
+  //c = "corrupted";
+  //strcpy(p.data, c);
   return;
 }

@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
 
     total[incoming.seq] = true;
     // 1. Process Packet
-    if (next_seq != incoming.seq) // received expected packet according to sequence
+    if (next_seq == incoming.seq) // received expected packet according to sequence
     {
       int i = incoming.seq;
       while (total[i] == true){

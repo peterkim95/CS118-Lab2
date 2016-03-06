@@ -91,7 +91,7 @@ void send_packet(
    // If this is the first time we are sending this packet (i.e. not retransmitting it),
    // this packet is at the end of the window.
    Window_slot window_slot;
-   // TODO window_slot.seq_num = outgoing.seq;
+   window_slot.seq_num = outgoing.seq;
    window_slot.got_ack = false;
    window.push_back(window_slot);
 
@@ -250,9 +250,7 @@ int main(int argc, char *argv[])
         long long oldest_timestamp = it->t;
         long long time_delta = current_timestamp - oldest_timestamp;
 
-        //   dequeue
-        //   resend packet
-        //   add packet to end of queue
+        // If there is a timeout, we need to resend the packet and restart the timer
         if (time_delta > timeout) {
 
           // Move from the front of the timer queue to the end, with a new timestamp
@@ -268,8 +266,6 @@ int main(int argc, char *argv[])
           if (sendto(sock, &outgoing, sizeof(retransmitted_packet.p), 0, (struct sockaddr*) &client, clientlen) < 0) {
              error("ERROR sending packet\n");
           }
-
-          //for (list<bpacket>::iterator it = timer_queue.begin(); it != timer_queue.end(); it++) { }
         }
 
         else {

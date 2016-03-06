@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
     }
 
 
-    if (incoming.type == 3)  // final data packet
+    if (incoming.type == FIN)  // final data packet
     {
       is_complete = true;
     }

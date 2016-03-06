@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 
   FILE* fp = fopen("receive", "w");
 
-  char* all_data;
+  char* all_data = new char [100000000];  // TODO: dynamically allocate more if needed
   char* data;
 
   int next_seq = 0;

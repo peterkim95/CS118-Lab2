@@ -116,8 +116,8 @@ void send_packet(
    // printout header stuff
    printf("Sent packet: ");
    printf(" [Type: %d]",         outgoing.type);
-   printf(" [Seq #: %d]",        outgoing.seq);
-   printf(" [Payload size: %d]", outgoing.size);
+   printf(" [Seq #: %5d]",        outgoing.seq);
+   printf(" [Payload size: %4d]", outgoing.size);
    printf("\n");
 
    return;
@@ -222,7 +222,7 @@ int main(int argc, char *argv[])
         // Check ack's sequence number to see what packet got received
         seq_num = get_seq_num(incoming);
 
-        printf("Received an ack:  Seq #%d\n", seq_num);
+        printf("Received an ack:  Seq #%7d\n", seq_num);
 
         // Remove the packet from timer_queue
         for (list<bpacket>::iterator it = timer_queue.begin(); it != timer_queue.end(); it++) {

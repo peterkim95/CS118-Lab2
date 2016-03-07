@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
   int seq_num;
   size_t window_size = 5; // TODO: input
   int current_seq_num = -1;
-  long timeout = 7000;    // TODO
+  long timeout = 10000;    // TODO
   int window_end = 0;         // holds byte offset of where to read next in the file
   socklen_t clientlen;
   struct sockaddr_in server, client;
@@ -284,8 +284,8 @@ int main(int argc, char *argv[])
           timer_queue.push_back(retransmitted_packet);
 
           // Resend
-          printf(" * timeout: retransmitted %d\n", retransmitted_packet.p.seq);
-          if (sendto(sock, &outgoing, sizeof(retransmitted_packet.p), 0, (struct sockaddr*) &client, clientlen) < 0) {
+          printf(" * timeout: retransmitted seq# %d\n", retransmitted_packet.p.seq);
+          if (sendto(sock, &retransmitted_packet.p, sizeof(retransmitted_packet.p), 0, (struct sockaddr*) &client, clientlen) < 0) {
              error("ERROR sending packet\n");
           }
         }

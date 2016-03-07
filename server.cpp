@@ -22,6 +22,17 @@
 using namespace std;
 
 
+int get_next_seq_num(int current_seq_num, int window_size) {
+  int next_seq_num = current_seq_num + 1;
+
+  if (next_seq_num <= window_size) {
+    return next_seq_num;
+  }
+  else {
+    return 0;
+  }
+}
+
 int set_seq_num(int& current_seq_num, int window_size) {
   current_seq_num += 1;
   current_seq_num = current_seq_num % window_size;
@@ -68,7 +79,8 @@ void send_packet(
    fseek(fp, window_end, SEEK_SET);
    outgoing.size = fread(outgoing.data, 1, PACKET_DATA_SIZE, fp);
 
-   outgoing.seq = set_seq_num(current_seq_num, window_size);
+   outgoing.seq = current_seq_num;
+   current_seq_num = get_next_seq_num(current_seq_num, window_size);
 
    // Move the pointer pointing to where we finished reading from
    window_end += outgoing.size;
@@ -102,7 +114,11 @@ void send_packet(
 
    // print_packet(outgoing, 1);
    // printout header stuff
-   printf("Sent - Type: %d, Seq #: %d, Size: %d, Data: \n\n", outgoing.type, outgoing.seq, outgoing.size);
+   printf("Sent packet\n");
+   printf(" Type: %d\n", outgoing.type);
+   printf(" Seq #: %d\n", outgoing.seq);
+   printf(" Payload size #: %d\n", outgoing.size);
+   printf("\n");
 
    return;
 }
@@ -116,7 +132,7 @@ int main(int argc, char *argv[])
 {
   int sock, length, n;
   int seq_num;
-  size_t window_size = 5; // TODO: input
+  size_t window_size = 115; // TODO: input
   int current_seq_num = -1;
   long timeout = 7000;    // TODO
   int window_end = 0;         // holds byte offset of where to read next in the file
@@ -156,6 +172,7 @@ int main(int argc, char *argv[])
   while (1)
   {
 
+
     // Listen until we get a request for a file
     if ((n = recvfrom(sock,&incoming, sizeof(incoming),0,(struct sockaddr *)&client,&clientlen)) < 0) {
       sleep(1);
@@ -190,6 +207,7 @@ int main(int argc, char *argv[])
     // Send the initial packets
     // Send as many as possible until the window is full or the whole file has been sent
     window_end = 0;
+    current_seq_num = 0;
     while((window.size() < window_size ) && (window_end < fsize)) {
        send_packet(outgoing, window_end, timer_queue, sock, fp, client, clientlen, window, current_seq_num, window_size);
     }
@@ -203,6 +221,8 @@ int main(int argc, char *argv[])
 
         // Check ack's sequence number to see what packet got received
         seq_num = get_seq_num(incoming);
+
+        printf("Received an ack for Seq #%d\n\n", seq_num);
 
         // Remove the packet from timer_queue
         for (list<bpacket>::iterator it = timer_queue.begin(); it != timer_queue.end(); it++) {

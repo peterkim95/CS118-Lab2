@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
+#include <list>
 
 #include "packet.c"
 
@@ -22,7 +23,6 @@ int main(int argc, char *argv[])
   Packet incoming, outgoing;
   struct sockaddr_in server, from;
   struct hostent *hp;
-  char buffer[1024];
   char* filename;
 
   if (argc != 4)
@@ -72,7 +72,6 @@ int main(int argc, char *argv[])
   FILE* fp = fopen("receive", "w");
 
   char* all_data = new char [100000000];  // TODO: dynamically allocate more if needed
-  char* data;
 
   int next_seq = 0;
 

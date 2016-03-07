@@ -2,6 +2,9 @@
 
 #define PACKET_DATA_SIZE 1008 // 1024 - 4(INT) = 1024 - (4*4) = 1008
 
+const int MAX_SEQ_NUM = 30000;  // From the spec: 30 Kbytes
+const int PACKET_SIZE = 1024;
+
 enum Packet_type { DATA, ACK, FIN };
 
 typedef struct packet

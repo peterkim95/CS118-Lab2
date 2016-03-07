@@ -16,6 +16,28 @@
 
 using namespace std;
 
+
+typedef struct window_slot_struct
+{
+  int seq_num;  // Packet sequence number
+  Packet packet;
+  bool received;
+} Window_slot;
+
+
+int get_next_seq_num(int current_seq_num, int window_size) {
+  int next_seq_num = current_seq_num + PACKET_SIZE;
+
+  if (next_seq_num <= MAX_SEQ_NUM) {
+    return next_seq_num;
+  }
+  else {
+    return 0;
+  }
+}
+
+
+
 int main(int argc, char *argv[])
 {
   int sock, n;
@@ -24,6 +46,8 @@ int main(int argc, char *argv[])
   struct sockaddr_in server, from;
   struct hostent *hp;
   char* filename;
+  list<Window_slot> window;
+  int window_size = 5;  // TODO: user input
 
   if (argc != 4)
   {
@@ -61,8 +85,8 @@ int main(int argc, char *argv[])
   print_packet(outgoing, 1);
 
   bool is_complete = false;
-  bool total[10000];
 
+  // TODO
   // set by user later
   int ploss = 0.1;
   int pcorr = 0.2;
@@ -71,10 +95,21 @@ int main(int argc, char *argv[])
 
   FILE* fp = fopen("receive", "w");
 
-  char* all_data = new char [100000000];  // TODO: dynamically allocate more if needed
 
   int next_seq = 0;
 
+  // Initialize window
+  for (int i = 0; i < window_size; i++) {
+    Window_slot window_slot;
+    window_slot.received = false;
+    window_slot.seq_num = next_seq;
+    window.push_back(window_slot);
+
+    next_seq = get_next_seq_num(next_seq, window_size);
+  }
+
+
+  // Listen for packets
   while (1)
   {
     n = recvfrom(sock, &incoming, sizeof(incoming), 0, (struct sockaddr *)&from, &length);
@@ -96,57 +131,57 @@ int main(int argc, char *argv[])
       continue;
     }
 
-    total[incoming.seq] = true;
     // 1. Process Packet
-    if (next_seq == incoming.seq) // received expected packet according to sequence
-    {
-      int i = incoming.seq;
-      while (total[i] == true){
-        i++;
+    // Mark the packt with the proper sequence number as received in our window
+    for (list<Window_slot>::iterator it = window.begin(); it != window.end(); it++) {
+      if (it->seq_num == incoming.seq) {
+        it->received = true;
+        it->packet = incoming;
+        break;
       }
-      next_seq = i;
-    }
-    else  // received out-of-order packet
-    {
-      printf("out-of-order packet received!\n");
-
     }
 
-    int offset;
-    offset = incoming.seq * incoming.size;   // size should be 1008 for normal data packet; otherwise whatever's left for the final one
+    // Slide window over as much as possible and write data
+    list<Window_slot>::iterator it = window.begin();
+    while(it->received == true) {
+        // Write data
+        fwrite(it->packet.data, 1, it->packet.size, fp);
 
-    // Write data
-    memcpy(all_data + offset, incoming.data, incoming.size);
+        // If that was the last packet written we've written the whole file
+        if (it->packet.type == FIN) {
+          is_complete = true;
+        }
 
+        // Remove from front of queue
+        it = window.erase(it);
+
+        // Slide window over by adding a slot to the end queue to make up for deleting from the front of the queue
+        Window_slot window_slot;
+        window_slot.received = false;
+        window_slot.seq_num = next_seq;
+        window.push_back(window_slot);
+        next_seq = get_next_seq_num(next_seq, window_size);
+    }
 
     // 2. Send ACK
     bzero((char *) &outgoing, sizeof(outgoing));
-    outgoing.type = 2;
+    outgoing.type = ACK;
     outgoing.seq = incoming.seq;
     outgoing.size = 0;  // empty data, just an ack
-    // strcpy(outgoing.data, filename);
-
     if (sendto(sock, &outgoing, sizeof(outgoing), 0, (struct sockaddr*) &server, length) < 0) {
       error("ERROR - Failed to write to socket in sending ack");
     }
 
-
-    if (incoming.type == FIN)  // final data packet
-    {
-      is_complete = true;
-    }
-
     // File transfer complete! Break out of loop.
-    if (is_complete)
+    if (is_complete) {
       break;
+    }
   }
 
-  //write to file
-  fwrite(all_data, 1, sizeof(all_data), fp);
-	free(all_data);
-	fclose(fp);
+  // Close the file pointer
+  fclose(fp);
 
-
+  // Close the socket
   close(sock);
   return 0;
 }

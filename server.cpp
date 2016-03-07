@@ -256,6 +256,7 @@ int main(int argc, char *argv[])
         // If there are no more packets to send, break out of this loop (stop listening for acks)
         // so the server can listen for the next file request.
         if (timer_queue.empty() && window_end >= fsize) {
+          printf(" ====== Completed file transfer ======\n");
           break;
         }
       }

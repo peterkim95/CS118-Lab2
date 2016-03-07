@@ -11,11 +11,15 @@
 #include <string.h>
 #include <time.h>
 #include <list>
+#include <iostream>
+#include <string>
 
 #include "packet.c"
 
 using namespace std;
 
+
+bool interactive_mode = false;
 
 typedef struct window_slot_struct
 {
@@ -129,6 +133,15 @@ int main(int argc, char *argv[])
     {
       printf("This packet is corrupted. Discarding...\n");
       continue;
+    }
+
+    if (interactive_mode) {
+      string input;
+      printf("Make this packet lost?\n");
+      cin >> input;
+      if (input[0] == 'y') {
+        continue;
+      }
     }
 
     // 1. Process Packet

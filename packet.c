@@ -1,9 +1,9 @@
 //typedef enum { false, true } bool;
 
-#define PACKET_DATA_SIZE 1008 // 1024 - 4(INT) = 1024 - (4*4) = 1008
+#define PACKET_DATA_SIZE 984 // 1000 - 4(INT) = 1000 - (4*4) = 984
 
 const int MAX_SEQ_NUM = 30000;  // From the spec: 30 Kbytes
-const int PACKET_SIZE = 1024;
+const int PACKET_SIZE = 1000;
 
 enum Packet_type { DATA, ACK, FIN };
 
@@ -26,7 +26,8 @@ typedef struct bpacket
 void print_packet(Packet p, int x)
 {
 	if (x == 0)
-		printf("Received - Type: %d, Seq #: %d, Size: %d, Data: \n%s\n", p.type, p.seq, p.size, p.data);
+		printf("Received - Type: %d, Seq #: %d, Size: %d\n", p.type, p.seq, p.size);
+        //printf("%s\n", p.data);
 	else
 		printf("Sent - Type: %d, Seq #: %d, Size: %d, Data: \n%s\n", p.type, p.seq, p.size, p.data);
 	return;

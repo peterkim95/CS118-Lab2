@@ -21,6 +21,29 @@
 
 using namespace std;
 
+void print_usage(char* filename) {
+    printf("\n");
+    printf("usage: %s -p <port_number> [-w <window_size>] [-t <timeout>]\n", filename);
+    printf("                [-l <loss_probability>] [-c <corruption_probability>]\n");
+    printf("\n");
+    printf("Options:\n");
+    printf("     -p <port_number>\n");
+    printf("         Set the port number that the server should be listening to\n");
+    printf("     -w <window_size>\n");
+    printf("         Set the window size in bytes.  Default is 5000\n");
+    printf("     -t <timeout>\n");
+    printf("         Set the timeout in milliseconds.  Default is 10000\n");
+    printf("     -l <loss_probability>\n");
+    printf("         Set the probability that a packet sent gets lost.\n");
+    printf("         Default is 0.  <loss_prabability> should be between 0 and 1\n");
+    printf("     -c <corruption_probability>\n");
+    printf("         Set the probability that a packet sent gets corrupted.\n");
+    printf("         Default is 0.  <corruption_probability> should be between 0 and 1\n");
+    printf("\n");
+
+    return;
+}
+
 
 int get_next_seq_num(int current_seq_num, int window_size) {
   int next_seq_num = current_seq_num + PACKET_SIZE;
@@ -128,7 +151,7 @@ void send_packet(
 
 
 
-int main(int argc, char *argv[])
+int main(int argc, char **argv)
 {
   int sock, length, n;
   int seq_num;
@@ -142,14 +165,59 @@ int main(int argc, char *argv[])
   Packet incoming, outgoing;
   list<bpacket> timer_queue;
   list<Window_slot> window;
+  char* port_no;
+  float lost_probability = 0;
+  float corruption_probability = 0;
 
 
   // Handle commandline arguments
-  if (argc < 2)
-  {
-    fprintf(stderr, "ERROR, no port provided\n");
-    exit(0);
+  extern char *optarg;
+  int getopt_val;
+  bool pflag=false;
+  while ((getopt_val = getopt(argc, argv, "p:l:c:w:t:")) != -1) {
+    switch(getopt_val) {
+      case 'p':
+        pflag = 1;
+        port_no = optarg;
+        break;
+      case 'l':
+        lost_probability = strtof(optarg, NULL);
+        if (lost_probability > 1) {
+          printf("Probabilty of a lost packet must between 0 and 1\n");
+          exit(1);
+        }
+        break;
+      case 'c':
+        corruption_probability = strtof(optarg, NULL);
+        if (corruption_probability > 1) {
+          printf("Probabilty of a corrupted packet must between 0 and 1\n");
+          exit(1);
+        }
+        break;
+      case 'w':
+        window_size = atoi(optarg);
+        break;
+      case 't':
+        timeout = atoi(optarg);
+        break;
+      case '?':
+        print_usage(argv[0]);
+        exit(1);
+        break;
+    }
   }
+  if (pflag == false) {
+    printf("\n  ** You must specify a port ** \n");
+    print_usage(argv[0]);
+    exit(1);
+  }
+  printf("Starting the server\n");
+  printf("  - Port:  %s\n", port_no);
+  printf("  - Window size: %ld bytes\n", window_size);
+  printf("  - Timeout: %lu milliseconds\n", timeout);
+  printf("  - Probabilty of a lost packet: %.2f\n", lost_probability);
+  printf("  - Probabilty of a corrupted packet: %.2f\n", corruption_probability);
+
 
 
   // Create UDP socket
@@ -159,7 +227,7 @@ int main(int argc, char *argv[])
   bzero(&server,length);
   server.sin_family=AF_INET;
   server.sin_addr.s_addr=INADDR_ANY;
-  server.sin_port=htons(atoi(argv[1]));
+  server.sin_port=htons(atoi(port_no));
   if (bind(sock, (struct sockaddr *)&server, length) < 0)
     error("binding");
   clientlen = sizeof(struct sockaddr_in);
@@ -256,7 +324,7 @@ int main(int argc, char *argv[])
         // If there are no more packets to send, break out of this loop (stop listening for acks)
         // so the server can listen for the next file request.
         if (timer_queue.empty() && window_end >= fsize) {
-          printf(" ====== Completed file transfer ======\n");
+          printf(" ====== Completed file transfer ======\n\n");
           break;
         }
       }

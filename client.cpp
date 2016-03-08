@@ -19,7 +19,7 @@
 using namespace std;
 
 
-bool interactive_mode = false;
+bool interactive_mode = true;
 
 typedef struct window_slot_struct
 {

@@ -13,14 +13,12 @@
 #include <list>
 #include <iostream>
 #include <string>
-#include <functional>
 
 #include "packet.c"
 
 using namespace std;
 
-
-bool interactive_mode = true;
+bool interactive_mode = false;
 
 typedef struct window_slot_struct
 {
@@ -64,8 +62,8 @@ int main(int argc, char *argv[])
   // Get ploss and pcorrupt
   double ploss;
   double pcorr;
-  ploss = atoi(argv[4]);
-  pcorr = atoi(argv[5]);
+  ploss = atof(argv[4]);
+  pcorr = atof(argv[5]);
 
   if (ploss < 0 || ploss > 1 || pcorr < 0 || pcorr > 1)
   {
@@ -129,6 +127,8 @@ int main(int argc, char *argv[])
 
     // 0. Emulate corruption and loss
     double r = ((double)rand() / (double)RAND_MAX);
+    //printf("(%f)\n", r);
+    //printf("[%d]\n", ploss);
     if (r < ploss)
     {
       printf("This packet is lost. Discarding...\n");
@@ -136,15 +136,22 @@ int main(int argc, char *argv[])
     }
 
     r = ((double)rand() / (double)RAND_MAX);
-    if (r < pcorr)
-      corrupt_packet(&incoming);
-
-    hash<char*> my_hash;
-    if (my_hash(incoming.data) != incoming.checksum)
-    {
-      printf("This packet is corrupted. Discarding...\n");
-      continue;
+    //printf("(%f)\n", r);
+    //printf("[%f]\n", pcorr);
+    if (r < pcorr) {
+       //printf("CORRUPTN\n");
+       //corrupt_packet(&incoming);
+       printf("This packet is corrupted. Discarding...\n");
+       continue;
     }
+    //std::tr1::hash<char*> my_hash;
+    //printf("%u \n", incoming.checksum);
+    //printf("%u \n", my_hash(incoming.data));
+    //if (my_hash(incoming.data) != incoming.checksum)
+    //{
+      //printf("This packet is corrupted. Discarding...\n");
+      //continue;
+    //}
 
     if (interactive_mode) {
       string input;

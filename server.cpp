@@ -101,7 +101,8 @@ void send_packet(
    // Read the next data block from the file
    fseek(fp, window_end, SEEK_SET);
    outgoing.size = fread(outgoing.data, 1, PACKET_DATA_SIZE, fp);
-
+   outgoing.checksum = my_hash(outgoing.data);
+   //printf("%u \n", outgoing.checksum);
    outgoing.seq = current_seq_num;
    current_seq_num = get_next_seq_num(current_seq_num, window_size);
 

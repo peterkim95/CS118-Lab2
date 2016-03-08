@@ -1,11 +1,13 @@
 //typedef enum { false, true } bool;
-
+#include <tr1/functional>
 #define PACKET_DATA_SIZE 984 // 1000 - 4(INT) = 1000 - (4*4) = 984
 
 const int MAX_SEQ_NUM = 30000;  // From the spec: 30 Kbytes
 const int PACKET_SIZE = 1000;
 
 enum Packet_type { DATA, ACK, FIN };
+
+std::tr1::hash<char*> my_hash;
 
 typedef struct packet
 {
@@ -42,7 +44,7 @@ void error(const char *msg)
 void corrupt_packet(Packet* p)
 {
 
-  char* c;
+  const char* c;
   c = "corrupted...";
   strcpy(p->data, c);
   return;

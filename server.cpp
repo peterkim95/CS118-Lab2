@@ -5,6 +5,7 @@
 
 #include <sys/types.h>
 #include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -286,6 +287,14 @@ int main(int argc, char **argv)
 
       // Received an ack
       if(recvfrom(sock,&incoming, sizeof(incoming),0,(struct sockaddr *)&client,&clientlen) > 0) {
+
+        // Probability of the ack being corruption
+        if(((double) rand() / (double) RAND_MAX) < lost_probability) {
+          printf(" - Ack for packet seq #%d lost\n", incoming.seq);
+          continue;
+        }
+
+        // Probability of the ack packet being lost
 
         // Check ack's sequence number to see what packet got received
         seq_num = get_seq_num(incoming);

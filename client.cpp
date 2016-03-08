@@ -48,13 +48,16 @@ int main(int argc, char *argv[])
   struct hostent *hp;
   char* filename;
   list<Window_slot> window;
-  int window_size = 5;  // TODO: user input
+  int window_size;
 
   if (argc != 6)
   {
-    printf("Usage: ./client host port filename pl pc\n");
+    printf("Usage: ./client host port filename pl pc window_size\n");
     exit(1);
   }
+
+  // Determine window size
+  window_size = atoi(argv[6]) / 1000;
 
   // Get requested filename
   filename = argv[3];

@@ -64,7 +64,7 @@ int set_seq_num(int& current_seq_num, int window_size) {
 }
 
 long long get_current_timestamp() {
-  struct timeval te; 
+  struct timeval te;
   gettimeofday(&te, NULL); // get current time
   long long milliseconds = te.tv_sec*1000LL + te.tv_usec/1000; // caculate milliseconds
   return milliseconds;
@@ -267,8 +267,8 @@ int main(int argc, char **argv)
 
 
     int total;
-    total = fsize / 1024;
-    if (fsize % 1024 > 0)
+    total = fsize / 1000;
+    if (fsize % 1000 > 0)
       total++;
     printf("Required packets: %d\n", total);
 

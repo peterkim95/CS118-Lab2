@@ -288,13 +288,17 @@ int main(int argc, char **argv)
       // Received an ack
       if(recvfrom(sock,&incoming, sizeof(incoming),0,(struct sockaddr *)&client,&clientlen) > 0) {
 
-        // Probability of the ack being corruption
+        // Probability of the ack being lost
         if(((double) rand() / (double) RAND_MAX) < lost_probability) {
           printf(" - Ack for packet seq #%d lost\n", incoming.seq);
           continue;
         }
 
-        // Probability of the ack packet being lost
+        // Probability of the ack packet being corrupted
+        if(((double) rand() / (double) RAND_MAX) < corruption_probability) {
+          printf(" - Ack for packet seq #%d corrupted\n", incoming.seq);
+          continue;
+        }
 
         // Check ack's sequence number to see what packet got received
         seq_num = get_seq_num(incoming);

@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
   list<Window_slot> window;
   int window_size;
 
-  if (argc != 6)
+  if (argc != 7)
   {
     printf("Usage: ./client host port filename pl pc window_size\n");
     exit(1);

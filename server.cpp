@@ -102,8 +102,7 @@ void send_packet(
    // Read the next data block from the file
    fseek(fp, window_end, SEEK_SET);
    outgoing.size = fread(outgoing.data, 1, PACKET_DATA_SIZE, fp);
-   outgoing.checksum = my_hash(outgoing.data);
-   //printf("%u \n", outgoing.checksum);
+
    outgoing.seq = current_seq_num;
    current_seq_num = get_next_seq_num(current_seq_num, window_size);
 
@@ -157,9 +156,9 @@ int main(int argc, char **argv)
 {
   int sock, length, n;
   int seq_num;
-  size_t window_size = 5; // TODO: input
+  size_t window_size = 5;
   int current_seq_num = -1;
-  long timeout = 10000;    // TODO
+  long timeout = 10000;
   int window_end = 0;         // holds byte offset of where to read next in the file
   socklen_t clientlen;
   struct sockaddr_in server, client;
@@ -198,6 +197,11 @@ int main(int argc, char **argv)
         break;
       case 'w':
         window_size = atoi(optarg);
+        window_size = window_size/1000;
+        if (window_size < 1 || window_size > 15) {
+          printf("The window size must be between 1000 and 15000 for the selective repeat protocol to work");
+          exit(1);
+        }
         break;
       case 't':
         timeout = atoi(optarg);

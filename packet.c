@@ -12,7 +12,7 @@ typedef struct packet
   int type;	// 0: Request, 1: Data, 2: ACK, 3: FIN
   int seq;	// Packet sequence number
   int size;	// Data size
-  int checksum;   // To detect corruption
+  size_t checksum;   // To detect corruption
 
   char data[PACKET_DATA_SIZE];
 } Packet;
@@ -39,15 +39,11 @@ void error(const char *msg)
   exit(0);
 }
 
-int hash(char* data)
+void corrupt_packet(Packet* p)
 {
-  return 1;
-}
 
-void corrupt_packet(Packet p)
-{
-  //char* c;
-  //c = "corrupted";
-  //strcpy(p.data, c);
+  char* c;
+  c = "corrupted...";
+  strcpy(p->data, c);
   return;
 }

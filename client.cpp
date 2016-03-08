@@ -13,6 +13,7 @@
 #include <list>
 #include <iostream>
 #include <string>
+#include <functional>
 
 #include "packet.c"
 
@@ -40,8 +41,6 @@ int get_next_seq_num(int current_seq_num, int window_size) {
   }
 }
 
-
-
 int main(int argc, char *argv[])
 {
   int sock, n;
@@ -53,14 +52,26 @@ int main(int argc, char *argv[])
   list<Window_slot> window;
   int window_size = 5;  // TODO: user input
 
-  if (argc != 4)
+  if (argc != 6)
   {
-    printf("Usage: ./client host port filename\n");
+    printf("Usage: ./client host port filename pl pc\n");
     exit(1);
   }
 
   // Get requested filename
   filename = argv[3];
+
+  // Get ploss and pcorrupt
+  double ploss;
+  double pcorr;
+  ploss = atoi(argv[4]);
+  pcorr = atoi(argv[5]);
+
+  if (ploss < 0 || ploss > 1 || pcorr < 0 || pcorr > 1)
+  {
+    printf("Your probabilities of loss and corruption must be 0 <= p <= 1!");
+    exit(1);
+  }
 
   sock = socket(AF_INET, SOCK_DGRAM, 0);
   if (sock < 0) error("socket");
@@ -90,10 +101,6 @@ int main(int argc, char *argv[])
 
   bool is_complete = false;
 
-  // TODO
-  // set by user later
-  int ploss = 0.1;
-  int pcorr = 0.2;
 
   srand (time(NULL));
 
@@ -130,6 +137,10 @@ int main(int argc, char *argv[])
 
     r = ((double)rand() / (double)RAND_MAX);
     if (r < pcorr)
+      corrupt_packet(&incoming);
+
+    hash<char*> my_hash;
+    if (my_hash(incoming.data) != incoming.checksum)
     {
       printf("This packet is corrupted. Discarding...\n");
       continue;

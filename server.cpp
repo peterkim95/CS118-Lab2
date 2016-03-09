@@ -24,20 +24,20 @@ using namespace std;
 
 void print_usage(char* filename) {
     printf("\n");
-    printf("usage: %s -p <port_number> [-w <window_size>] [-t <timeout>]\n", filename);
-    printf("                [-l <loss_probability>] [-c <corruption_probability>]\n");
+    printf( CYAN "usage: %s -p <port_number> [-w <window_size>] [-t <timeout>]\n", filename);
+    printf("                [-l <loss_probability>] [-c <corruption_probability>]\n" RESET);
     printf("\n");
     printf("Options:\n");
-    printf("     -p <port_number>\n");
+    printf("     " CYAN "-p" RESET " <port_number>\n");
     printf("         Set the port number that the server should be listening to\n");
-    printf("     -w <window_size>\n");
+    printf("     " CYAN "-w" RESET " <window_size>\n");
     printf("         Set the window size in bytes.  Default is 5000\n");
-    printf("     -t <timeout>\n");
+    printf("     " CYAN "-t" RESET " <timeout>\n");
     printf("         Set the timeout in milliseconds.  Default is 10000\n");
-    printf("     -l <loss_probability>\n");
+    printf("     " CYAN "-l" RESET " <loss_probability>\n");
     printf("         Set the probability that a packet sent gets lost.\n");
     printf("         Default is 0.  <loss_prabability> should be between 0 and 1\n");
-    printf("     -c <corruption_probability>\n");
+    printf("     " CYAN "-c" RESET " <corruption_probability>\n");
     printf("         Set the probability that a packet sent gets corrupted.\n");
     printf("         Default is 0.  <corruption_probability> should be between 0 and 1\n");
     printf("\n");
@@ -138,9 +138,9 @@ void send_packet(
 
    // print_packet(outgoing, 1);
    // printout header stuff
-   printf("Sent packet: ");
+   printf(" > " BLUE "Sent" RESET " packet: ");
    printf(" [Type: %d]",         outgoing.type);
-   printf(" [Seq #: %5d]",        outgoing.seq);
+   printf(" [Seq #: " YELLOW "%5d" RESET "]",        outgoing.seq);
    printf(" [Payload size: %4d]", outgoing.size);
    printf("\n");
 
@@ -257,7 +257,7 @@ int main(int argc, char **argv)
     // Got a request for a file
     char* filename;
     filename = incoming.data;
-    printf("Got a request for file:%s\n", filename);
+    printf("Got a request for file: %s\n", filename);
 
     // Check if file exists
     FILE *fp = fopen(filename, "r");
@@ -268,6 +268,7 @@ int main(int argc, char **argv)
     int fsize = (int) ftell(fp);
     fseek(fp, 0L, SEEK_SET);     // Seek back to start of file to prepare for reading
     printf("File size = %d\n", fsize);
+    printf("\n");
 
 
     int total;
@@ -295,20 +296,20 @@ int main(int argc, char **argv)
 
         // Probability of the ack being lost
         if(((double) rand() / (double) RAND_MAX) < lost_probability) {
-          printf(" - Ack for packet seq #%d lost\n", incoming.seq);
+          printf(" - " RED "Lost" RESET " ack for packet seq " YELLOW "#%d" RESET "\n", incoming.seq);
           continue;
         }
 
         // Probability of the ack packet being corrupted
         if(((double) rand() / (double) RAND_MAX) < corruption_probability) {
-          printf(" - Ack for packet seq #%d corrupted\n", incoming.seq);
+          printf(" - " RED "Corrupted" RESET " ack for packet seq " YELLOW "#%d" RESET "\n", incoming.seq);
           continue;
         }
 
         // Check ack's sequence number to see what packet got received
         seq_num = get_seq_num(incoming);
 
-        printf("Received an ack:  Seq #%7d\n", seq_num);
+        printf(" > " GREEN "Received" RESET " an ack:  Seq " YELLOW "#%d" RESET "\n", seq_num);
 
         // Remove the packet from timer_queue
         for (list<bpacket>::iterator it = timer_queue.begin(); it != timer_queue.end(); it++) {
@@ -371,7 +372,7 @@ int main(int argc, char **argv)
           timer_queue.push_back(retransmitted_packet);
 
           // Resend
-          printf(" * timeout: retransmitted seq# %d\n", retransmitted_packet.p.seq);
+          printf(" * " CYAN "Timeout" RESET ": retransmitted seq " YELLOW "#%d" RESET "\n", retransmitted_packet.p.seq);
           if (sendto(sock, &retransmitted_packet.p, sizeof(retransmitted_packet.p), 0, (struct sockaddr*) &client, clientlen) < 0) {
              error("ERROR sending packet\n");
           }

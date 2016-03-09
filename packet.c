@@ -2,6 +2,16 @@
 #include <tr1/functional>
 #define PACKET_DATA_SIZE 984 // 1000 - 4(INT) = 1000 - (4*4) = 984
 
+#define NORMAL   "\x1B[0m"
+#define RED      "\x1B[31m"
+#define GREEN    "\x1B[32m"
+#define YELLOW   "\x1B[33m"
+#define BLUE     "\x1B[34m"
+#define MAGENTA  "\x1B[35m"
+#define CYAN     "\x1B[36m"
+#define WHITE    "\x1B[37m"
+#define RESET    "\033[0m"
+
 const int MAX_SEQ_NUM = 30000;  // From the spec: 30 Kbytes
 const int PACKET_SIZE = 1000;
 

@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <list>
 #include <iostream>
+#include <algorithm>
 
 #include "packet.c"
 
@@ -169,13 +170,20 @@ int main(int argc, char **argv)
   char* port_no;
   float lost_probability = 0;
   float corruption_probability = 0;
+  bool congestion_mode = false;
+  long unsigned int cwnd = 1;  // congestion window for slow start
+  long unsigned int cwnd_bytes = cwnd * 1000;
+  long unsigned int ssthresh;
+  bool slow_start_mode = false;
+  bool congestion_avoidance_mode = false;
+  //bool fast_recovery_mode = false;
 
 
   // Handle commandline arguments
   extern char *optarg;
   int getopt_val;
   bool pflag=false;
-  while ((getopt_val = getopt(argc, argv, "p:l:c:w:t:")) != -1) {
+  while ((getopt_val = getopt(argc, argv, "p:l:c:w:t:x")) != -1) {
     switch(getopt_val) {
       case 'p':
         pflag = 1;
@@ -206,6 +214,10 @@ int main(int argc, char **argv)
       case 't':
         timeout = atoi(optarg);
         break;
+      case 'x':
+        congestion_mode = true;
+        slow_start_mode = true;
+        break;
       case '?':
         print_usage(argv[0]);
         exit(1);
@@ -219,10 +231,13 @@ int main(int argc, char **argv)
   }
   printf("Starting the server\n");
   printf("  - Port:  %s\n", port_no);
-  printf("  - Window size: %ld bytes\n", window_size);
+  printf("  - Window size: %ld bytes\n", window_size*PACKET_SIZE);
   printf("  - Timeout: %lu milliseconds\n", timeout);
   printf("  - Probabilty of a lost packet: %.2f\n", lost_probability);
   printf("  - Probabilty of a corrupted packet: %.2f\n", corruption_probability);
+  if (congestion_mode) {
+    printf("  - Congestion mode activated\n");
+  }
 
 
 
@@ -268,7 +283,6 @@ int main(int argc, char **argv)
     int fsize = (int) ftell(fp);
     fseek(fp, 0L, SEEK_SET);     // Seek back to start of file to prepare for reading
     printf("File size = %d\n", fsize);
-    printf("\n");
 
 
     int total;
@@ -276,6 +290,7 @@ int main(int argc, char **argv)
     if (fsize % 1000 > 0)
       total++;
     printf("Required packets: %d\n", total);
+    printf("\n");
 
 
 
@@ -283,8 +298,15 @@ int main(int argc, char **argv)
     // Send as many as possible until the window is full or the whole file has been sent
     window_end = 0;
     current_seq_num = 0;
-    while((window.size() < window_size ) && (window_end < fsize)) {
-       send_packet(outgoing, window_end, timer_queue, sock, fp, client, clientlen, window, current_seq_num, window_size);
+    if (congestion_mode) {
+         // Send just one packet for slow start
+         printf(MAGENTA " ~ Slow start mode activated\n" RESET);
+         send_packet(outgoing, window_end, timer_queue, sock, fp, client, clientlen, window, current_seq_num, window_size);
+    }
+    else {
+      while((window.size() < window_size ) && (window_end < fsize)) {
+         send_packet(outgoing, window_end, timer_queue, sock, fp, client, clientlen, window, current_seq_num, window_size);
+      }
     }
 
 
@@ -311,6 +333,42 @@ int main(int argc, char **argv)
 
         printf(" > " GREEN "Received" RESET " an ack:  Seq " YELLOW "#%d" RESET "\n", seq_num);
 
+        // Every time we receive an ack we need to update CWND appropriately
+        if (congestion_mode) {
+          if (slow_start_mode) {
+            cwnd += 1;
+            cwnd_bytes = cwnd * PACKET_SIZE;
+            printf(MAGENTA " ~ CWND now is %lu (slow start)\n" RESET, cwnd_bytes);
+          }
+          else if (congestion_avoidance_mode) {
+            cwnd_bytes = cwnd_bytes + ((PACKET_SIZE * PACKET_SIZE) / cwnd_bytes);
+            cwnd = cwnd_bytes / 1000;
+            printf(MAGENTA " ~ CWND now is %lu (congestion avoidance)\n" RESET, cwnd_bytes);
+          }
+
+          if (cwnd_bytes >= ssthresh && ssthresh > 0) {
+            if (slow_start_mode) { // part two of slow start mode ends
+              slow_start_mode = false;
+              congestion_avoidance_mode = true;
+              printf(MAGENTA " ~ CWND reached SSTHRESH. Exiting slow start mode\n" RESET);
+              printf(BOLD_MAGENTA " ~ Entering congestion avoidance mode\n" RESET);
+
+              //cwnd_bytes = cwnd_bytes / 2;
+              //cwnd = cwnd_bytes / 1000;
+              //cwnd_bytes = cwnd * PACKET_SIZE; // To get it be mod 1000
+
+              printf(MAGENTA " ~ CWND set to %lu\n" RESET, cwnd_bytes);
+            }
+            /*
+            else if (congestion_avoidance_mode) {
+              congestion_avoidance_mode = false;
+              printf("Exiting congestion avoidance mode\n");
+              printf("Entering fast recovery mode\n");
+            }
+            */
+          }
+        }
+
         // Remove the packet from timer_queue
         for (list<bpacket>::iterator it = timer_queue.begin(); it != timer_queue.end(); it++) {
           if (it->p.seq == seq_num) {
@@ -336,8 +394,17 @@ int main(int argc, char **argv)
         // Send next packet
         // Add timer to queue
         // Add to end of window
-        while((window.size() < window_size ) && (window_end < fsize)) {
-           send_packet(outgoing, window_end, timer_queue, sock, fp, client, clientlen, window, current_seq_num, window_size);
+        if (congestion_mode) {
+          ssize_t limit;
+          limit = min(window_size, cwnd);
+          while(((int) window.size() < (int) limit) && (window_end < fsize)) {
+             send_packet(outgoing, window_end, timer_queue, sock, fp, client, clientlen, window, current_seq_num, window_size);
+          }
+        }
+        else {
+          while((window.size() < window_size ) && (window_end < fsize)) {
+             send_packet(outgoing, window_end, timer_queue, sock, fp, client, clientlen, window, current_seq_num, window_size);
+          }
         }
 
         // If there are no more packets to send, break out of this loop (stop listening for acks)
@@ -371,11 +438,33 @@ int main(int argc, char **argv)
           timer_queue.erase(it);
           timer_queue.push_back(retransmitted_packet);
 
+
           // Resend
           printf(" * " CYAN "Timeout" RESET ": retransmitted seq " YELLOW "#%d" RESET "\n", retransmitted_packet.p.seq);
           if (sendto(sock, &retransmitted_packet.p, sizeof(retransmitted_packet.p), 0, (struct sockaddr*) &client, clientlen) < 0) {
              error("ERROR sending packet\n");
           }
+
+          
+          if (congestion_mode) {
+            ssthresh = (cwnd_bytes / 2);
+            if (ssthresh < 1000) {
+              ssthresh = 1000;
+            }
+            cwnd = 1;
+            cwnd_bytes = cwnd * PACKET_SIZE;
+
+            printf( MAGENTA " ~ Congestion detected: ssthresh set to %lu, cwnd = 1000\n" RESET, ssthresh);
+
+            if (congestion_avoidance_mode) {
+              congestion_avoidance_mode = false;
+              slow_start_mode = true;
+              printf(MAGENTA " ~ Exiting congestion avoidance mode\n" RESET);
+              printf(BOLD_MAGENTA " ~ Entering slow start mode\n" RESET);
+            }
+          }
+
+
         }
 
         else {

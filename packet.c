@@ -8,9 +8,12 @@
 #define YELLOW   "\x1B[33m"
 #define BLUE     "\x1B[34m"
 #define MAGENTA  "\x1B[35m"
+#define BOLD_MAGENTA  "\x1B[35;1m"
 #define CYAN     "\x1B[36m"
 #define WHITE    "\x1B[37m"
 #define RESET    "\033[0m"
+
+
 
 const int MAX_SEQ_NUM = 30000;  // From the spec: 30 Kbytes
 const int PACKET_SIZE = 1000;

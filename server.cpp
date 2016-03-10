@@ -26,7 +26,7 @@ using namespace std;
 void print_usage(char* filename) {
     printf("\n");
     printf( CYAN "usage: %s -p <port_number> [-w <window_size>] [-t <timeout>]\n", filename);
-    printf("                [-l <loss_probability>] [-c <corruption_probability>]\n" RESET);
+    printf("                [-l <loss_probability>] [-c <corruption_probability>] [-x]\n" RESET);
     printf("\n");
     printf("Options:\n");
     printf("     " CYAN "-p" RESET " <port_number>\n");
@@ -41,6 +41,8 @@ void print_usage(char* filename) {
     printf("     " CYAN "-c" RESET " <corruption_probability>\n");
     printf("         Set the probability that a packet sent gets corrupted.\n");
     printf("         Default is 0.  <corruption_probability> should be between 0 and 1\n");
+    printf("     " CYAN "-x" RESET "\n");
+    printf("         Set the control congestion mode to be activated.\n");
     printf("\n");
 
     return;

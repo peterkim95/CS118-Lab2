@@ -98,7 +98,12 @@ int main(int argc, char *argv[])
   // Send initial file request
   if (sendto(sock, &outgoing, sizeof(outgoing), 0, (const struct sockaddr*)&server, length) < 0)
     error("Sendto");
-  print_packet(outgoing, 1);
+  //print_packet(outgoing, 1);
+  printf(" > " BLUE "Sent" RESET " packet: ");
+  printf(" [Type: %d]",         outgoing.type);
+  printf(" [Seq #: " YELLOW "%5d" RESET "]",        outgoing.seq);
+  printf(" [Payload size: %4d]", outgoing.size);
+  printf("\n");
 
   bool is_complete = false;
 
@@ -126,7 +131,10 @@ int main(int argc, char *argv[])
   {
     n = recvfrom(sock, &incoming, sizeof(incoming), 0, (struct sockaddr *)&from, &length);
     if (n < 0) error("recvfrom");
-    print_packet(incoming, 0);
+    //print_packet(incoming, 0);
+    //int i = get_seq_num(incoming);
+    printf(" > " GREEN "Received" RESET " a PKT:  Seq " YELLOW "#%d" RESET "\n", incoming.seq);
+
 
     // 0. Emulate corruption and loss
     double r = ((double)rand() / (double)RAND_MAX);
@@ -205,7 +213,12 @@ int main(int argc, char *argv[])
     if (sendto(sock, &outgoing, sizeof(outgoing), 0, (struct sockaddr*) &server, length) < 0) {
       error("ERROR - Failed to write to socket in sending ack");
     }
-    print_packet(outgoing, 1);
+    //print_packet(outgoing, 1);
+    printf(" > " BLUE "Sent" RESET " packet: ");
+    printf(" [Type: %d]",         outgoing.type);
+    printf(" [Seq #: " YELLOW "%5d" RESET "]",        outgoing.seq);
+    printf(" [Payload size: %4d]", outgoing.size);
+    printf("\n");
     // File transfer complete! Break out of loop.
     if (is_complete) {
       break;

@@ -205,7 +205,7 @@ int main(int argc, char *argv[])
     if (sendto(sock, &outgoing, sizeof(outgoing), 0, (struct sockaddr*) &server, length) < 0) {
       error("ERROR - Failed to write to socket in sending ack");
     }
-
+    print_packet(outgoing, 1);
     // File transfer complete! Break out of loop.
     if (is_complete) {
       break;

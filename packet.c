@@ -44,7 +44,7 @@ void print_packet(Packet p, int x)
 		printf("Received - Type: %d, Seq #: %d, Size: %d\n", p.type, p.seq, p.size);
         //printf("%s\n", p.data);
 	else
-		printf("Sent - Type: %d, Seq #: %d, Size: %d, Data: \n%s\n", p.type, p.seq, p.size, p.data);
+		printf("Sent - Type: %d, Seq #: %d, Size: %d, Data: %s\n", p.type, p.seq, p.size, p.data);
 	return;
 }
 
